@@ -1,0 +1,58 @@
+# Orchestration complète : MySQL + Backend (NestJS) + Frontend (Nuxt)
+# Lancement :  docker compose up --build
+# Arrêt      :  docker compose down   (ajouter -v pour effacer la base)
+
+services:
+  mysql:
+    image: mysql:8
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASS:-change-moi}
+      MYSQL_DATABASE: ${DB_NAME:-shop}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_PASS:-change-moi}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ../backend
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASS: ${DB_PASS:-change-moi}
+      DB_NAME: ${DB_NAME:-shop}
+      DB_SYNC: ${DB_SYNC:-true}
+      JWT_SECRET: ${JWT_SECRET:-change-moi-en-prod}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@maboutique.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-change-moi}
+      # Origine du frontend autorisee (CORS)
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3001}
+    ports:
+      - "3002:3002"
+    volumes:
+      - uploads:/app/uploads        # persiste les images uploadées
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  frontend:
+    build: ../frontEnd
+    restart: unless-stopped
+    environment:
+      # URL publique du backend (joignable par le navigateur)
+      NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE:-http://localhost:3002}
+    ports:
+      - "3001:3000"                  # le site est servi sur http://localhost:3001
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
+  uploads:
