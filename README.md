@@ -24,6 +24,7 @@ docker compose up --build
 
 - Site  : http://localhost:3001
 - API   : http://localhost:3002
+- https://dorra-creations.vercel.app/
 
 Arrêt : `docker compose down` (ajouter `-v` pour effacer la base et les uploads).
 
@@ -35,4 +36,3 @@ Arrêt : `docker compose down` (ajouter `-v` pour effacer la base et les uploads
 
 ## Connexion admin par défaut
 
-`hammaKarmeni@gmail.com` / `Karmeni135135` (configurable via `ADMIN_EMAIL` / `ADMIN_PASSWORD`).
